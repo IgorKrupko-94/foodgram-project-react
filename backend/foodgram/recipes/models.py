@@ -10,12 +10,14 @@ class Tag(models.Model):
     name = models.CharField(
         'Наименование тега',
         max_length=200,
+        unique=True,
         help_text='Укажите наименование тега'
     )
     color = models.CharField(
         'Цвет',
         max_length=7,
         null=True,
+        unique=True,
         help_text='Укажите цвет тега'
     )
     slug = models.SlugField(

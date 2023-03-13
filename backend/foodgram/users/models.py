@@ -26,6 +26,11 @@ class User(AbstractUser):
         max_length=150,
         help_text='Укажите фамилию'
     )
+    password = models.CharField(
+        'Пароль',
+        max_length=150,
+        help_text='Укажите пароль'
+    )
 
     class Meta:
         ordering = ('id',)
