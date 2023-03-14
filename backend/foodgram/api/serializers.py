@@ -23,6 +23,12 @@ class TagSerializer(ModelSerializer):
         fields = '__all__'
 
 
+class RecipeShortSerializer(ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
+
+
 class IngredientWithAmount(Field):
     def to_representation(self, value):
         pass

@@ -4,8 +4,10 @@ from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.serializers import (SerializerMethodField,
                                         ValidationError,
+                                        ModelSerializer,
                                         )
 
+from api.serializers import RecipeShortSerializer
 from .models import Follow
 
 User = get_user_model()
@@ -48,3 +50,34 @@ class CustomUserSerializer(UserSerializer):
             user=request.user,
             author=obj.id
         ).exists()
+
+
+class FollowSerializer(ModelSerializer):
+    is_subscribed = SerializerMethodField()
+    recipes = RecipeShortSerializer(many=True, read_only=True)
+    recipes_count = SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
+        read_only_fields = ('email', 'username', 'first_name', 'last_name')
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        return Follow.objects.filter(
+            user=request.user,
+            author=obj.id
+        ).exists()
+
+    def get_recipes_count(self, obj):
+        author = obj.id
+        return author.recipes.count()
