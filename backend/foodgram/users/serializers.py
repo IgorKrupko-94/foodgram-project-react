@@ -3,8 +3,7 @@ from re import match
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.serializers import (SerializerMethodField,
-                                        ValidationError,
-                                        ModelSerializer,
+                                        ValidationError
                                         )
 
 from api.serializers import RecipeShortSerializer
@@ -46,15 +45,16 @@ class CustomUserSerializer(UserSerializer):
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
+        if request.user.is_anonymous:
+            return False
         return Follow.objects.filter(
             user=request.user,
             author=obj.id
         ).exists()
 
 
-class FollowSerializer(ModelSerializer):
-    is_subscribed = SerializerMethodField()
-    recipes = RecipeShortSerializer(many=True, read_only=True)
+class FollowSerializer(CustomUserSerializer):
+    recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
 
     class Meta:
@@ -71,13 +71,10 @@ class FollowSerializer(ModelSerializer):
         )
         read_only_fields = ('email', 'username', 'first_name', 'last_name')
 
-    def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        return Follow.objects.filter(
-            user=request.user,
-            author=obj.id
-        ).exists()
-
     def get_recipes_count(self, obj):
-        author = obj.id
-        return author.recipes.count()
+        return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        recipes = obj.recipes.all()
+        serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
+        return serializer.data
