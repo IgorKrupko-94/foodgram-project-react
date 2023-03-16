@@ -41,6 +41,7 @@ class Ingredient(models.Model):
     name = models.CharField(
         'Наименование ингредиента',
         max_length=200,
+        unique=True,
         help_text='Укажите наименование ингредиента'
     )
     measurement_unit = models.CharField(
@@ -114,6 +115,14 @@ class TagRecipe(models.Model):
         on_delete=models.CASCADE
     )
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['tag', 'recipe'],
+                name='Связь между тегом и рецептом должна быть уникальна'
+            )
+        ]
+
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(
@@ -128,6 +137,14 @@ class IngredientRecipe(models.Model):
         'Количество',
         validators=(MinValueValidator(1),)
     )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=('ingredient', 'recipe'),
+                name='Связь ингредиента и рецепта должна быть уникальна'
+            )
+        ]
 
 
 class Favorites(models.Model):
@@ -146,6 +163,12 @@ class Favorites(models.Model):
 
     class Meta:
         verbose_name = 'Избранное'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='Пользователь не может добавить рецепт в Избранное дважды'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} добавил в Избранное рецепт {self.recipe}'
@@ -167,6 +190,12 @@ class Basket(models.Model):
 
     class Meta:
         verbose_name = 'Корзина'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='Пользователь не может добавить рецепт в Корзину дважды'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} добавил в Корзину рецепт {self.recipe}'

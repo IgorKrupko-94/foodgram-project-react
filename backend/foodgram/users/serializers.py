@@ -5,9 +5,11 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.serializers import (SerializerMethodField,
                                         ValidationError
                                         )
+from rest_framework.validators import UniqueTogetherValidator
 
-from api.serializers import RecipeShortSerializer
+import api.serializers
 from .models import Follow
+
 
 User = get_user_model()
 
@@ -15,13 +17,14 @@ User = get_user_model()
 class CustomUserCreateSerializer(UserCreateSerializer):
     class Meta:
         model = User
-        fields = ('email',
-                  'id',
-                  'username',
-                  'first_name',
-                  'last_name',
-                  'password'
-                  )
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'password'
+            )
         write_only_fields = ('password',)
 
     def validate_username(self, value):
@@ -35,13 +38,14 @@ class CustomUserSerializer(UserSerializer):
 
     class Meta:
         model = User
-        fields = ('email',
-                  'id',
-                  'username',
-                  'first_name',
-                  'last_name',
-                  'is_subscribed'
-                  )
+        fields = (
+            'email',
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed'
+            )
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
@@ -49,7 +53,7 @@ class CustomUserSerializer(UserSerializer):
             return False
         return Follow.objects.filter(
             user=request.user,
-            author=obj.id
+            author=obj
         ).exists()
 
 
@@ -70,11 +74,23 @@ class FollowSerializer(CustomUserSerializer):
             'recipes_count'
         )
         read_only_fields = ('email', 'username', 'first_name', 'last_name')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Follow.objects.all(),
+                fields=('user', 'author'),
+                message=('Пользователь не может подписаться '
+                         'на другого пользователя дважды')
+            )
+        ]
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
 
     def get_recipes(self, obj):
         recipes = obj.recipes.all()
-        serializer = RecipeShortSerializer(recipes, many=True, read_only=True)
+        serializer = api.serializers.ShortRecipeSerializer(
+            recipes,
+            many=True,
+            read_only=True
+        )
         return serializer.data
