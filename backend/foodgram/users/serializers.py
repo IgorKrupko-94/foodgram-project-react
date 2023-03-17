@@ -5,9 +5,8 @@ from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework.serializers import (SerializerMethodField,
                                         ValidationError
                                         )
-from rest_framework.validators import UniqueTogetherValidator
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
-import api.serializers
 from .models import Follow
 
 
@@ -74,23 +73,38 @@ class FollowSerializer(CustomUserSerializer):
             'recipes_count'
         )
         read_only_fields = ('email', 'username', 'first_name', 'last_name')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Follow.objects.all(),
-                fields=('user', 'author'),
-                message=('Пользователь не может подписаться '
-                         'на другого пользователя дважды')
-            )
-        ]
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
 
     def get_recipes(self, obj):
+        from api.serializers import ShortRecipeSerializer
+        request = self.context.get('request')
+        recipes_limit = request.GET.get('recipes_limit')
         recipes = obj.recipes.all()
-        serializer = api.serializers.ShortRecipeSerializer(
+        if recipes_limit:
+            recipes = recipes[:int(recipes_limit)]
+        serializer = ShortRecipeSerializer(
             recipes,
             many=True,
             read_only=True
         )
         return serializer.data
+
+    def validate(self, data):
+        user = self.context.get('request').user
+        author = self.instance
+        if user == author:
+            raise ValidationError(
+                detail='Пользователь не может подписаться сам на себя',
+                code=HTTP_400_BAD_REQUEST
+            )
+        if Follow.objects.filter(
+            user=user,
+            author=author
+        ).exists():
+            raise ValidationError(
+                detail=('Пользователь не может подписаться '
+                        'на другого пользователя дважды'),
+                code=HTTP_400_BAD_REQUEST
+            )
