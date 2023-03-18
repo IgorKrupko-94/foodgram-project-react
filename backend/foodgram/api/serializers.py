@@ -1,12 +1,14 @@
 from base64 import b64decode
 
 from django.core.files.base import ContentFile
+from django.shortcuts import get_object_or_404
 from rest_framework.serializers import (ModelSerializer,
                                         SerializerMethodField,
                                         ValidationError,
                                         CharField,
                                         ImageField
                                         )
+from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from recipes.models import (Ingredient,
                             Tag,
@@ -137,3 +139,44 @@ class RecipeSerializer(ModelSerializer):
             user=request.user,
             recipe=obj
         ).exists()
+
+    def validate(self, data):
+        ingredients = self.initial_data.get('ingredients')
+        tags = self.initial_data.get('tags')
+        if not ingredients:
+            raise ValidationError(
+                {'ingredients': ('В рецепте должен быть использован '
+                                 'минимум один ингредиент')
+                 }
+            )
+        array_of_ingredients = []
+        for ingredient in ingredients:
+            current_ingredient = get_object_or_404(
+                Ingredient, pk=ingredient['id']
+            )
+            if current_ingredient in array_of_ingredients:
+                raise ValidationError(
+                    detail='Ингредиенты не должны повторяться в рецепте',
+                    code=HTTP_400_BAD_REQUEST
+                )
+            if int(ingredient['amount']) < 1:
+                raise ValidationError(
+                    {'ingredients': ('Количество ингредиента в рецепте '
+                                     'должно быть больше или равно 1')
+                     }
+                )
+        if not tags:
+            raise ValidationError(
+                {'tags': ('Рецепт должен быть привязан '
+                          'как минимум к одному тегу')
+                 }
+            )
+        array_of_tags = set(tags)
+        if len(array_of_tags) != len(tags):
+            raise ValidationError(
+                detail='Теги не должны повторяться в рецепте',
+                code=HTTP_400_BAD_REQUEST
+            )
+        data['ingredients'] = ingredients
+        data['tags'] = tags
+        return data
