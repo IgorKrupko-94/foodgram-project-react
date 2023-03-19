@@ -46,6 +46,16 @@ class CustomUserViewSet(UserViewSet):
                 author=author
             )
             return Response(serializer.data, status=HTTP_201_CREATED)
-        follow = get_object_or_404(Follow, user=request.user, author=author)
-        follow.delete()
+        if not Follow.objects.filter(
+            user=request.user,
+            author=author
+        ).exists():
+            return Response(
+                {'errors': 'Данная подписка не существует'},
+                status=HTTP_400_BAD_REQUEST
+            )
+        Follow.objects.filter(
+            user=request.user,
+            author=author
+        ).delete()
         return Response(status=HTTP_204_NO_CONTENT)

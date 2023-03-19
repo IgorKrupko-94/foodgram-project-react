@@ -108,3 +108,4 @@ class FollowSerializer(CustomUserSerializer):
                         'на другого пользователя дважды'),
                 code=HTTP_400_BAD_REQUEST
             )
+        return data

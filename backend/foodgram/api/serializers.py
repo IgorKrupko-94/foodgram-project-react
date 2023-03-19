@@ -177,6 +177,4 @@ class RecipeSerializer(ModelSerializer):
                 detail='Теги не должны повторяться в рецепте',
                 code=HTTP_400_BAD_REQUEST
             )
-        data['ingredients'] = ingredients
-        data['tags'] = tags
         return data
