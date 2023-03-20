@@ -1,7 +1,9 @@
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
+from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
 from rest_framework.status import (HTTP_400_BAD_REQUEST,
                                    HTTP_201_CREATED,
@@ -28,6 +30,8 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
+    filter_backends = (SearchFilter,)
+    search_fields = ('^name',)
 
 
 class TagViewSet(ReadOnlyModelViewSet):
@@ -40,6 +44,13 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
     permission_classes = (AuthorOrAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = (
+        'tags',
+        'author',
+        'is_favorited',
+        'is_in_shopping_cart'
+    )
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
