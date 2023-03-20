@@ -33,12 +33,6 @@ class TagSerializer(ModelSerializer):
         fields = '__all__'
 
 
-class ShortRecipeSerializer(ModelSerializer):
-    class Meta:
-        model = Recipe
-        fields = ('id', 'name', 'image', 'cooking_time')
-
-
 class IngredientRecipeSerializer(ModelSerializer):
     id = CharField(source='ingredient.id')
     name = CharField(source='ingredient.name')
@@ -56,6 +50,14 @@ class Base64ImageField(ImageField):
             ext = format.split('/')[-1]
             data = ContentFile(b64decode(imgstr), name='temp.' + ext)
         return super().to_internal_value(data)
+
+
+class ShortRecipeSerializer(ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
 
 
 class RecipeSerializer(ModelSerializer):
