@@ -9,6 +9,7 @@ from rest_framework.status import (HTTP_400_BAD_REQUEST,
                                    )
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
+from .permissions import AuthorOrAdminOrReadOnly, IsAuthenticatedOrAdmin
 from .serializers import (IngredientSerializer,
                           TagSerializer,
                           RecipeSerializer,
@@ -38,11 +39,12 @@ class TagViewSet(ReadOnlyModelViewSet):
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+    permission_classes = (AuthorOrAdminOrReadOnly,)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=False)
+    @action(detail=False, permission_classes=IsAuthenticatedOrAdmin)
     def download_shopping_cart(self, request):
         if not Basket.objects.filter(
                 user=request.user
@@ -69,7 +71,10 @@ class RecipeViewSet(ModelViewSet):
                                 )
         return response
 
-    @action(methods=['post', 'delete'], detail=True)
+    @action(methods=['post', 'delete'],
+            detail=True,
+            permission_classes=IsAuthenticatedOrAdmin
+            )
     def shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
@@ -101,7 +106,10 @@ class RecipeViewSet(ModelViewSet):
         ).delete()
         return Response(status=HTTP_204_NO_CONTENT)
 
-    @action(methods=['post', 'delete'], detail=True)
+    @action(methods=['post', 'delete'],
+            detail=True,
+            permission_classes=IsAuthenticatedOrAdmin
+            )
     def favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
         if request.method == 'POST':
