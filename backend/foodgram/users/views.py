@@ -20,7 +20,7 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
 
-    @action(detail=False, permission_classes=IsAuthenticatedOrAdmin)
+    @action(detail=False, permission_classes=(IsAuthenticatedOrAdmin,))
     def subscriptions(self, request):
         follows = User.objects.filter(following__user=request.user)
         pages = self.paginate_queryset(follows)
@@ -33,7 +33,7 @@ class CustomUserViewSet(UserViewSet):
 
     @action(methods=['post', 'delete'],
             detail=True,
-            permission_classes=IsAuthenticatedOrAdmin
+            permission_classes=(IsAuthenticatedOrAdmin,)
             )
     def subscribe(self, request, **kwargs):
         author = get_object_or_404(User, id=self.kwargs.get('id'))

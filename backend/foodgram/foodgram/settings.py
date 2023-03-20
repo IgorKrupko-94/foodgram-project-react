@@ -1,9 +1,12 @@
 import os
 
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-SECRET_KEY = '!@toxl6djtnt211eslrje$-+%_0)1zzkiwvq@g3hf9sswl3#0d'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 DEBUG = True
 
@@ -22,7 +25,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'djoser',
-    'django-filters'
+    'django_filters'
 ]
 
 MIDDLEWARE = [

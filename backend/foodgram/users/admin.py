@@ -5,7 +5,7 @@ from .models import User, Follow
 
 
 class UserAdmin(ModelAdmin):
-    list_filter = ('email', 'name')
+    list_filter = ('email', 'username')
 
 
 admin.site.register(User, UserAdmin)

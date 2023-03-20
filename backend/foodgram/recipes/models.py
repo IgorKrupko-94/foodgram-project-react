@@ -108,14 +108,18 @@ class Recipe(models.Model):
 class TagRecipe(models.Model):
     tag = models.ForeignKey(
         Tag,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Тег, связанный с рецептом'
     )
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт, связанный с тегом'
     )
 
     class Meta:
+        verbose_name = 'Связь тегов и рецептов'
+        verbose_name_plural = 'Связь тегов и рецептов'
         constraints = [
             models.UniqueConstraint(
                 fields=['tag', 'recipe'],
@@ -123,15 +127,20 @@ class TagRecipe(models.Model):
             )
         ]
 
+    def __str__(self):
+        return f'Тег {self.tag} связан с рецептом {self.recipe}'
+
 
 class IngredientRecipe(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиент, связанный с рецептом'
     )
     recipe = models.ForeignKey(
         Recipe,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        verbose_name='Рецепт, связанный с ингредиентом'
     )
     amount = models.PositiveIntegerField(
         'Количество',
@@ -139,12 +148,17 @@ class IngredientRecipe(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Связь ингредиентов и рецептов'
+        verbose_name_plural = 'Связь ингредиентов и рецептов'
         constraints = [
             models.UniqueConstraint(
                 fields=('ingredient', 'recipe'),
                 name='Связь ингредиента и рецепта должна быть уникальна'
             )
         ]
+
+    def __str__(self):
+        return f'Ингредиент {self.ingredient} связан с рецептом {self.recipe}'
 
 
 class Favorites(models.Model):
@@ -163,6 +177,7 @@ class Favorites(models.Model):
 
     class Meta:
         verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
         constraints = [
             models.UniqueConstraint(
                 fields=('user', 'recipe'),
@@ -190,6 +205,7 @@ class Basket(models.Model):
 
     class Meta:
         verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзина'
         constraints = [
             models.UniqueConstraint(
                 fields=('user', 'recipe'),

@@ -11,6 +11,7 @@ from rest_framework.status import (HTTP_400_BAD_REQUEST,
                                    )
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 
+from .filters import RecipeFilter
 from .permissions import AuthorOrAdminOrReadOnly, IsAuthenticatedOrAdmin
 from .serializers import (IngredientSerializer,
                           TagSerializer,
@@ -45,17 +46,12 @@ class RecipeViewSet(ModelViewSet):
     serializer_class = RecipeSerializer
     permission_classes = (AuthorOrAdminOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = (
-        'tags',
-        'author',
-        'is_favorited',
-        'is_in_shopping_cart'
-    )
+    filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=False, permission_classes=IsAuthenticatedOrAdmin)
+    @action(detail=False, permission_classes=(IsAuthenticatedOrAdmin,))
     def download_shopping_cart(self, request):
         if not Basket.objects.filter(
                 user=request.user
@@ -84,7 +80,7 @@ class RecipeViewSet(ModelViewSet):
 
     @action(methods=['post', 'delete'],
             detail=True,
-            permission_classes=IsAuthenticatedOrAdmin
+            permission_classes=(IsAuthenticatedOrAdmin,)
             )
     def shopping_cart(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
@@ -119,7 +115,7 @@ class RecipeViewSet(ModelViewSet):
 
     @action(methods=['post', 'delete'],
             detail=True,
-            permission_classes=IsAuthenticatedOrAdmin
+            permission_classes=(IsAuthenticatedOrAdmin,)
             )
     def favorite(self, request, pk):
         recipe = get_object_or_404(Recipe, id=pk)
