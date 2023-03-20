@@ -2,29 +2,19 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
+from recipes.models import (Basket, Favorites, Ingredient, IngredientRecipe,
+                            Recipe, Tag)
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.response import Response
-from rest_framework.status import (HTTP_400_BAD_REQUEST,
-                                   HTTP_201_CREATED,
-                                   HTTP_204_NO_CONTENT
-                                   )
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
+from rest_framework.status import (HTTP_201_CREATED, HTTP_204_NO_CONTENT,
+                                   HTTP_400_BAD_REQUEST)
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from .filters import RecipeFilter
 from .permissions import AuthorOrAdminOrReadOnly, IsAuthenticatedOrAdmin
-from .serializers import (IngredientSerializer,
-                          TagSerializer,
-                          RecipeSerializer,
-                          ShortRecipeSerializer
-                          )
-from recipes.models import (Ingredient,
-                            Tag,
-                            Recipe,
-                            Favorites,
-                            Basket,
-                            IngredientRecipe
-                            )
+from .serializers import (IngredientSerializer, RecipeSerializer,
+                          ShortRecipeSerializer, TagSerializer)
 
 
 class IngredientViewSet(ReadOnlyModelViewSet):
@@ -73,10 +63,9 @@ class RecipeViewSet(ModelViewSet):
                     f'{ingredient["amount"]}\n\n'
                     )
             shopping_list += item
-        response = HttpResponse(shopping_list,
-                                content_type='text/plain;charset=UTF-8'
-                                )
-        return response
+        return HttpResponse(shopping_list,
+                            content_type='text/plain;charset=UTF-8'
+                            )
 
     @action(methods=['post', 'delete'],
             detail=True,

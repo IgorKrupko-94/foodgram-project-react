@@ -2,9 +2,7 @@ from re import match
 
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework.serializers import (SerializerMethodField,
-                                        ValidationError
-                                        )
+from rest_framework.serializers import SerializerMethodField, ValidationError
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
 from .models import Follow
