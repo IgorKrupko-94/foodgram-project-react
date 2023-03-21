@@ -59,6 +59,31 @@ class Ingredient(models.Model):
         return self.name
 
 
+class IngredientRecipe(models.Model):
+    ingredient = models.ForeignKey(
+        Ingredient,
+        on_delete=models.CASCADE,
+        verbose_name='Ингредиент, связанный с рецептом'
+    )
+    amount = models.PositiveIntegerField(
+        'Количество',
+        validators=(MinValueValidator(1),)
+    )
+
+    class Meta:
+        verbose_name = 'Ингредиенты с количеством'
+        verbose_name_plural = 'Ингредиенты с количеством'
+        constraints = [
+            models.UniqueConstraint(
+                fields=('ingredient', 'amount'),
+                name='Связь ингредиента и его количества должна быть уникальна'
+            )
+        ]
+
+    def __str__(self):
+        return f'Ингредиент {self.ingredient} в количестве {self.amount}'
+
+
 class Recipe(models.Model):
     name = models.CharField(
         'Наименование рецепта',
@@ -82,13 +107,13 @@ class Recipe(models.Model):
     )
     tags = models.ManyToManyField(
         Tag,
-        verbose_name='Тег',
+        verbose_name='Теги',
         through='TagRecipe'
     )
     ingredients = models.ManyToManyField(
-        Ingredient,
-        verbose_name='Ингредиент',
-        through='IngredientRecipe'
+        IngredientRecipe,
+        verbose_name='Ингредиенты',
+        related_name='recipes'
     )
     cooking_time = models.PositiveIntegerField(
         'Время приготовления',
@@ -129,36 +154,6 @@ class TagRecipe(models.Model):
 
     def __str__(self):
         return f'Тег {self.tag} связан с рецептом {self.recipe}'
-
-
-class IngredientRecipe(models.Model):
-    ingredient = models.ForeignKey(
-        Ingredient,
-        on_delete=models.CASCADE,
-        verbose_name='Ингредиент, связанный с рецептом'
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        verbose_name='Рецепт, связанный с ингредиентом'
-    )
-    amount = models.PositiveIntegerField(
-        'Количество',
-        validators=(MinValueValidator(1),)
-    )
-
-    class Meta:
-        verbose_name = 'Связь ингредиентов и рецептов'
-        verbose_name_plural = 'Связь ингредиентов и рецептов'
-        constraints = [
-            models.UniqueConstraint(
-                fields=('ingredient', 'recipe'),
-                name='Связь ингредиента и рецепта должна быть уникальна'
-            )
-        ]
-
-    def __str__(self):
-        return f'Ингредиент {self.ingredient} связан с рецептом {self.recipe}'
 
 
 class Favorites(models.Model):

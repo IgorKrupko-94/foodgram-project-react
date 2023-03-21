@@ -53,8 +53,7 @@ class RecipeSerializer(ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     ingredients = IngredientRecipeSerializer(
         many=True,
-        read_only=True,
-        source='ingredientrecipe_set',
+        read_only=True
     )
     author = CustomUserSerializer(read_only=True)
     is_favorited = SerializerMethodField()
@@ -80,14 +79,17 @@ class RecipeSerializer(ModelSerializer):
         tags = self.initial_data.get('tags')
         ingredients = self.initial_data.get('ingredients')
         recipe = Recipe.objects.create(**validated_data)
-        for tag in tags:
-            TagRecipe.objects.create(tag_id=tag, recipe=recipe)
         for ingredient in ingredients:
-            IngredientRecipe.objects.create(
-                ingredient_id=ingredient['id'],
-                recipe=recipe,
+            ing, _ = IngredientRecipe.objects.get_or_create(
+                ingredient_id=get_object_or_404(
+                    Ingredient,
+                    pk=ingredient['id']
+                ),
                 amount=ingredient['amount']
             )
+            recipe.ingredients.add(ing)
+        for tag in tags:
+            TagRecipe.objects.create(tag_id=tag, recipe=recipe)
         return recipe
 
     def update(self, instance, validated_data):
@@ -103,13 +105,16 @@ class RecipeSerializer(ModelSerializer):
         for tag in tags:
             TagRecipe.objects.create(tag_id=tag, recipe=instance)
         ingredients = self.initial_data.get('ingredients')
-        IngredientRecipe.objects.filter(recipe=instance).delete()
+        instance.ingredients.clear()
         for ingredient in ingredients:
-            IngredientRecipe.objects.create(
-                ingredient_id=ingredient['id'],
-                recipe=instance,
+            ing, _ = IngredientRecipe.objects.get_or_create(
+                ingredient_id=get_object_or_404(
+                    Ingredient,
+                    pk=ingredient['id']
+                ),
                 amount=ingredient['amount']
             )
+            instance.ingredients.add(ing)
         instance.save()
         return instance
 
