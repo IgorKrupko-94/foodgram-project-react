@@ -108,7 +108,7 @@ class Recipe(models.Model):
     tags = models.ManyToManyField(
         Tag,
         verbose_name='Теги',
-        through='TagRecipe'
+        related_name='recipes'
     )
     ingredients = models.ManyToManyField(
         IngredientRecipe,
@@ -128,32 +128,6 @@ class Recipe(models.Model):
 
     def __str__(self):
         return self.name
-
-
-class TagRecipe(models.Model):
-    tag = models.ForeignKey(
-        Tag,
-        on_delete=models.CASCADE,
-        verbose_name='Тег, связанный с рецептом'
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        verbose_name='Рецепт, связанный с тегом'
-    )
-
-    class Meta:
-        verbose_name = 'Связь тегов и рецептов'
-        verbose_name_plural = 'Связь тегов и рецептов'
-        constraints = [
-            models.UniqueConstraint(
-                fields=['tag', 'recipe'],
-                name='Связь между тегом и рецептом должна быть уникальна'
-            )
-        ]
-
-    def __str__(self):
-        return f'Тег {self.tag} связан с рецептом {self.recipe}'
 
 
 class Favorites(models.Model):

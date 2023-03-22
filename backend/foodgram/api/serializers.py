@@ -2,11 +2,23 @@ from base64 import b64decode
 
 from django.core.files.base import ContentFile
 from django.shortcuts import get_object_or_404
-from recipes.models import (Basket, Favorites, Ingredient, IngredientRecipe,
-                            Recipe, Tag, TagRecipe)
-from rest_framework.serializers import (CharField, ImageField, ModelSerializer,
-                                        SerializerMethodField, ValidationError)
+from rest_framework.serializers import (
+    CharField,
+    ImageField,
+    ModelSerializer,
+    SerializerMethodField,
+    ValidationError
+)
 from rest_framework.status import HTTP_400_BAD_REQUEST
+
+from recipes.models import (
+    Basket,
+    Favorites,
+    Ingredient,
+    IngredientRecipe,
+    Recipe,
+    Tag
+)
 from users.serializers import CustomUserSerializer
 
 
@@ -75,46 +87,31 @@ class RecipeSerializer(ModelSerializer):
             'is_in_shopping_cart'
         )
 
+    def add_ingredients(self, instance, ingredients):
+        for ingredient in ingredients:
+            ing, _ = IngredientRecipe.objects.get_or_create(
+                ingredient_id=ingredient['id'],
+                amount=ingredient['amount']
+            )
+            instance.ingredients.add(ing)
+        return instance
+
     def create(self, validated_data):
         tags = self.initial_data.get('tags')
         ingredients = self.initial_data.get('ingredients')
         recipe = Recipe.objects.create(**validated_data)
-        for ingredient in ingredients:
-            ing, _ = IngredientRecipe.objects.get_or_create(
-                ingredient_id=get_object_or_404(
-                    Ingredient,
-                    pk=ingredient['id']
-                ),
-                amount=ingredient['amount']
-            )
-            recipe.ingredients.add(ing)
-        for tag in tags:
-            TagRecipe.objects.create(tag_id=tag, recipe=recipe)
-        return recipe
+        recipe.tags.set(tags)
+        instance = self.add_ingredients(recipe, ingredients)
+        return instance
 
     def update(self, instance, validated_data):
-        instance.image = validated_data.get('image', instance.image)
-        instance.name = validated_data.get('name', instance.name)
-        instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get(
-            'cooking_time',
-            instance.cooking_time
-        )
+        super().update(instance, validated_data)
         tags = self.initial_data.get('tags')
-        TagRecipe.objects.filter(recipe=instance).delete()
-        for tag in tags:
-            TagRecipe.objects.create(tag_id=tag, recipe=instance)
         ingredients = self.initial_data.get('ingredients')
+        instance.tags.clear()
+        instance.tags.set(tags)
         instance.ingredients.clear()
-        for ingredient in ingredients:
-            ing, _ = IngredientRecipe.objects.get_or_create(
-                ingredient_id=get_object_or_404(
-                    Ingredient,
-                    pk=ingredient['id']
-                ),
-                amount=ingredient['amount']
-            )
-            instance.ingredients.add(ing)
+        instance = self.add_ingredients(instance, ingredients)
         instance.save()
         return instance
 
