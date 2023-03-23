@@ -98,7 +98,7 @@ class RecipeSerializer(ModelSerializer):
 
     def create(self, validated_data):
         tags = self.initial_data.get('tags')
-        ingredients = self.initial_data.get('ingredients')
+        ingredients = validated_data.pop('ingredients')
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         instance = self.add_ingredients(recipe, ingredients)
@@ -133,41 +133,39 @@ class RecipeSerializer(ModelSerializer):
             recipe=obj
         ).exists()
 
-    def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
-        tags = self.initial_data.get('tags')
-        if not ingredients:
+    def validate_ingredients(self, value):
+        if not value:
             raise ValidationError(
-                {'ingredients': ('В рецепте должен быть использован '
-                                 'минимум один ингредиент')
-                 }
+                {'ingredients': ('В рецепте должен быть использован'
+                                 ' минимум один ингредиент')},
+                code=HTTP_400_BAD_REQUEST
             )
-        array_of_ingredients = []
-        for ingredient in ingredients:
+        ingredient_list = []
+        for ingredient in value:
             current_ingredient = get_object_or_404(
-                Ingredient, pk=ingredient['id']
+                Ingredient,
+                pk=ingredient.get('id')
             )
-            if current_ingredient in array_of_ingredients:
+            if current_ingredient in ingredient_list:
                 raise ValidationError(
-                    detail='Ингредиенты не должны повторяться в рецепте',
+                    {'ingredients': ('Ингредиенты не должны'
+                                     ' повторяться в рецепте')},
                     code=HTTP_400_BAD_REQUEST
                 )
-            if int(ingredient['amount']) < 1:
+            if int(ingredient.get('amount')) < 1:
                 raise ValidationError(
-                    {'ingredients': ('Количество ингредиента в рецепте '
-                                     'должно быть больше или равно 1')
-                     }
+                    {'ingredients': ('Количество ингредиента в рецепте'
+                                     ' должно быть больше или равно 1')},
+                    code=HTTP_400_BAD_REQUEST
                 )
-        if not tags:
-            raise ValidationError(
-                {'tags': ('Рецепт должен быть привязан '
-                          'как минимум к одному тегу')
-                 }
-            )
-        array_of_tags = set(tags)
-        if len(array_of_tags) != len(tags):
+            ingredient_list.append(ingredient)
+        return value
+
+    def validate_tags(self, value):
+        tags_set = set(value)
+        if len(tags_set) != len(value):
             raise ValidationError(
                 detail='Теги не должны повторяться в рецепте',
                 code=HTTP_400_BAD_REQUEST
             )
-        return data
+        return value
