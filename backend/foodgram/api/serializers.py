@@ -97,8 +97,10 @@ class RecipeSerializer(ModelSerializer):
         return instance
 
     def create(self, validated_data):
-        tags = self.initial_data.get('tags')
-        ingredients = self.initial_data.get('ingredients')
+        tags = self.validate_tags(self.initial_data.get('tags'))
+        ingredients = self.validate_ingredients(
+            self.initial_data.get('ingredients')
+        )
         recipe = Recipe.objects.create(**validated_data)
         recipe.tags.set(tags)
         instance = self.add_ingredients(recipe, ingredients)
@@ -106,8 +108,10 @@ class RecipeSerializer(ModelSerializer):
 
     def update(self, instance, validated_data):
         super().update(instance, validated_data)
-        tags = self.initial_data.get('tags')
-        ingredients = self.initial_data.get('ingredients')
+        tags = self.validate_tags(self.initial_data.get('tags'))
+        ingredients = self.validate_ingredients(
+            self.initial_data.get('ingredients')
+        )
         instance.tags.clear()
         instance.tags.set(tags)
         instance.ingredients.clear()
@@ -134,7 +138,7 @@ class RecipeSerializer(ModelSerializer):
         ).exists()
 
     def validate_ingredients(self, value):
-        if not value:
+        if len(value) == 0:
             raise ValidationError(
                 {'ingredients': ('В рецепте должен быть использован'
                                  ' минимум один ингредиент')},
@@ -158,14 +162,14 @@ class RecipeSerializer(ModelSerializer):
                                      ' должно быть больше или равно 1')},
                     code=HTTP_400_BAD_REQUEST
                 )
-            ingredient_list.append(ingredient)
+            ingredient_list.append(current_ingredient)
         return value
 
     def validate_tags(self, value):
         tags_set = set(value)
         if len(tags_set) != len(value):
             raise ValidationError(
-                detail='Теги не должны повторяться в рецепте',
+                {'tags': 'Теги не должны повторяться в рецепте'},
                 code=HTTP_400_BAD_REQUEST
             )
         return value
