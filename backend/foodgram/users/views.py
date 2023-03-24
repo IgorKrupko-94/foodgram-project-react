@@ -32,13 +32,13 @@ class CustomUserViewSet(UserViewSet):
         )
         return self.get_paginated_response(serializer.data)
 
-    @action(methods=['post', 'delete'],
+    @action(methods=['post'],
             detail=True,
             permission_classes=(IsAuthenticatedOrAdmin,)
             )
     def subscribe(self, request, **kwargs):
-        author = get_object_or_404(User, id=self.kwargs.get('id'))
         if request.method == 'POST':
+            author = get_object_or_404(User, id=self.kwargs.get('id'))
             serializer = FollowSerializer(
                 author,
                 data=request.data,
@@ -46,11 +46,12 @@ class CustomUserViewSet(UserViewSet):
             )
             if not serializer.is_valid():
                 return Response(serializer.errors, status=HTTP_400_BAD_REQUEST)
-            Follow.objects.create(
-                user=request.user,
-                author=author
-            )
+            serializer.save()
             return Response(serializer.data, status=HTTP_201_CREATED)
+
+    @subscribe.mapping.delete
+    def delete_subscribe(self, request, **kwargs):
+        author = get_object_or_404(User, id=self.kwargs.get('id'))
         if not Follow.objects.filter(
             user=request.user,
             author=author

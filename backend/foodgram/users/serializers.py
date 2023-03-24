@@ -2,9 +2,14 @@ from re import match
 
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from rest_framework.serializers import SerializerMethodField, ValidationError
+from rest_framework.serializers import (
+    SerializerMethodField,
+    ValidationError,
+    ModelSerializer
+)
 from rest_framework.status import HTTP_400_BAD_REQUEST
 
+import api.serializers
 from .models import Follow
 
 
@@ -54,9 +59,10 @@ class CustomUserSerializer(UserSerializer):
         ).exists()
 
 
-class FollowSerializer(CustomUserSerializer):
+class FollowSerializer(ModelSerializer):
     recipes = SerializerMethodField()
     recipes_count = SerializerMethodField()
+    is_subscribed = SerializerMethodField()
 
     class Meta:
         model = User
@@ -76,18 +82,26 @@ class FollowSerializer(CustomUserSerializer):
         return obj.recipes.count()
 
     def get_recipes(self, obj):
-        from api.serializers import ShortRecipeSerializer
         request = self.context.get('request')
         recipes_limit = request.GET.get('recipes_limit')
         recipes = obj.recipes.all()
         if recipes_limit:
             recipes = recipes[:int(recipes_limit)]
-        serializer = ShortRecipeSerializer(
+        serializer = api.serializers.ShortRecipeSerializer(
             recipes,
             many=True,
             read_only=True
         )
         return serializer.data
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(
+            user=request.user,
+            author=obj
+        ).exists()
 
     def validate(self, data):
         user = self.context.get('request').user
@@ -107,3 +121,8 @@ class FollowSerializer(CustomUserSerializer):
                 code=HTTP_400_BAD_REQUEST
             )
         return data
+
+    def create(self, validated_data):
+        user = self.context.get('request').user
+        author = validated_data.get('author')
+        return Follow.objects.create(user=user, author=author)
