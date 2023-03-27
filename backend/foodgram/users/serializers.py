@@ -26,7 +26,7 @@ class CustomUserCreateSerializer(UserCreateSerializer):
             'first_name',
             'last_name',
             'password'
-            )
+        )
         write_only_fields = ('password',)
 
     def validate_username(self, value):
@@ -47,7 +47,7 @@ class CustomUserSerializer(UserSerializer):
             'first_name',
             'last_name',
             'is_subscribed'
-            )
+        )
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')
