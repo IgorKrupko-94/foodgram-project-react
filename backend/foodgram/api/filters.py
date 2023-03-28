@@ -3,22 +3,18 @@ from django_filters.rest_framework import (
     AllValuesMultipleFilter,
     BooleanFilter,
     FilterSet,
-    ModelChoiceFilter,
-    CharFilter
+    ModelChoiceFilter
 )
+from rest_framework.filters import SearchFilter
 
-from recipes.models import Recipe, Ingredient
+from recipes.models import Recipe
 
 
 User = get_user_model()
 
 
-class IngredientFilter(FilterSet):
-    name = CharFilter(field_name='name', lookup_expr='icontains')
-
-    class Meta:
-        model = Ingredient
-        fields = ('name',)
+class IngredientFilter(SearchFilter):
+    search_param = 'name'
 
 
 class RecipeFilter(FilterSet):
