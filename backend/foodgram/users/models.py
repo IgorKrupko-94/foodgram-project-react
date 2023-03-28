@@ -64,8 +64,7 @@ class Follow(models.Model):
             ),
             models.UniqueConstraint(
                 fields=['user', 'author'],
-                name=('Пользователь не может подписаться '
-                      'на другого пользователя дважды')
+                name='Подписаться на другого пользователя дважды запрещается'
             )
         ]
         verbose_name = 'Подписка',
