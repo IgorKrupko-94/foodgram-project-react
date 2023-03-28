@@ -1,7 +1,8 @@
 ![example workflow](https://github.com/IgorKrupko-94/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 # FOODGRAM-PROJECT-REACT
-
+Логин: igor
+Пароль: Wenger15@
 
 ### О чём проект:
 
@@ -132,8 +133,8 @@ sudo docker-compose exec backend python manage.py collectstatic --no-input
 * Копируем файл "ingredients.json" с фикстурами на сервер: 
 (копирование нужно делать из папки /backend/foodgram/data/)
 ```
-scp ingredients.json <username>@<ID>:/home/arsenal/          # username - имя пользователя на сервере
-                                                             # IP - публичный IP сервера
+scp ingredients.json <username>@<ID>:/home/<username>/          # username - имя пользователя на сервере
+                                                                # IP - публичный IP сервера
 ```
 
 * Копируем файл "ingredients.json" с фикстурами в контейнер:
