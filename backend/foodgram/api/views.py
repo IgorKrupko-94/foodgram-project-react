@@ -11,7 +11,7 @@ from rest_framework.status import (
 )
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .filters import RecipeFilter, IngredientFilter
+from .filters import RecipeFilter
 from .permissions import AuthorOrAdminOrReadOnly, IsAuthenticatedOrAdmin
 from recipes.models import (
     Basket,
@@ -33,8 +33,17 @@ class IngredientViewSet(ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
-    filterset_class = IngredientFilter
-    search_fields = ('^name',)
+
+    def get_queryset(self):
+        name = self.request.query_params['name'].lower()
+        starts_with_queryset = list(
+            self.queryset.filter(name__istartswith=name)
+        )
+        cont_queryset = self.queryset.filter(name__icontains=name)
+        starts_with_queryset.extend(
+            [x for x in cont_queryset if x not in starts_with_queryset]
+        )
+        return starts_with_queryset
 
 
 class TagViewSet(ReadOnlyModelViewSet):
