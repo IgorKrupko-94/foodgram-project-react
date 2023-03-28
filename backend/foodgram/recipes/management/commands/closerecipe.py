@@ -19,9 +19,8 @@ class Command(BaseCommand):
             for row in DictReader(open(
                     "data/ingredients.csv", encoding="utf-8"
             )):
-                list_ing = row.split(',')
                 model.objects.get_or_create(
-                    name=list_ing[0],
-                    measurement_unit=list_ing[1]
+                    name=row['ingredient'],
+                    measurement_unit=row['measurement']
                 )
         print("Загрузка завершена")
