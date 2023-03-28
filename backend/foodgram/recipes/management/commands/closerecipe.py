@@ -10,17 +10,16 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         print("Загрузка данных из ingredients.csv в Ingredient")
-        model = Ingredient
-        if model.objects.exists():
-            print(
-                f"{model.name} заполнена другими данными, отмена загрузки"
-            )
+        if Ingredient.objects.exists():
+            print('Модель ингредиентов заполнена другими данными, '
+                  'отмена загрузки')
         else:
-            for row in DictReader(open(
-                    "data/ingredients.csv", encoding="utf-8"
-            )):
-                model.objects.get_or_create(
-                    name=row['ingredient'],
-                    measurement_unit=row['measurement']
+            for row in DictReader(
+                    open("data/ingredients.csv", encoding="utf-8")
+            ):
+                name, measurement = row
+                Ingredient.objects.get_or_create(
+                    name=name,
+                    measurement_unit=measurement
                 )
         print("Загрузка завершена")
