@@ -3,13 +3,22 @@ from django_filters.rest_framework import (
     AllValuesMultipleFilter,
     BooleanFilter,
     FilterSet,
-    ModelChoiceFilter
+    ModelChoiceFilter,
+    CharFilter
 )
 
-from recipes.models import Recipe
+from recipes.models import Recipe, Ingredient
 
 
 User = get_user_model()
+
+
+class IngredientFilter(FilterSet):
+    name = CharFilter(lookup_expr='startswith')
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
 
 
 class RecipeFilter(FilterSet):
