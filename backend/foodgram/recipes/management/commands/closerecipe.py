@@ -10,6 +10,14 @@ from recipes.models import Ingredient
 class Command(BaseCommand):
     help = "Загрузить данные из data/ingredients.csv"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            'filename',
+            default='ingredients.csv',
+            nargs='?',
+            type=str
+        )
+
     def handle(self, *args, **options):
         print("Загрузка данных из ingredients.csv в Ingredient")
         if Ingredient.objects.exists():
