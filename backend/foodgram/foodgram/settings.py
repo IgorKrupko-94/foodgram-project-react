@@ -14,7 +14,8 @@ DEBUG = True
 ALLOWED_HOSTS = [
     '62.84.124.163',
     'foodgram2023.sytes.net',
-    'localhost'
+    'localhost',
+    'backend'
 ]
 
 INSTALLED_APPS = [
