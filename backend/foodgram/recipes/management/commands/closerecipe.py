@@ -1,5 +1,7 @@
-from csv import DictReader
+import os
+from csv import reader
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 
 from recipes.models import Ingredient
@@ -14,12 +16,18 @@ class Command(BaseCommand):
             print('Модель ингредиентов заполнена другими данными, '
                   'отмена загрузки')
         else:
-            for row in DictReader(
-                    open("data/ingredients.csv", encoding="utf-8")
-            ):
-                name, measurement = row
-                Ingredient.objects.get_or_create(
-                    name=name,
-                    measurement_unit=measurement
-                )
+            with open(os.path.join(
+                    settings.BASE_DIR,
+                    'data',
+                    options['filename']),
+                    'r',
+                    encoding='utf-8'
+            ) as file_name:
+                data = reader(file_name)
+                for row in data:
+                    name, measurement_unit = row
+                    Ingredient.objects.get_or_create(
+                        name=name,
+                        measurement_unit=measurement_unit
+                    )
         print("Загрузка завершена")
