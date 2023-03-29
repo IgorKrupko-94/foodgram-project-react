@@ -1,24 +1,15 @@
 from django.contrib.auth import get_user_model
 from django_filters import (
-    CharFilter,
     FilterSet,
     ModelChoiceFilter,
     AllValuesMultipleFilter,
     BooleanFilter
 )
 
-from recipes.models import Recipe, Ingredient
+from recipes.models import Recipe
 
 
 User = get_user_model()
-
-
-class IngredientFilter(FilterSet):
-    name = CharFilter(lookup_expr='istartswith')
-
-    class Meta:
-        model = Ingredient
-        fields = ('name',)
 
 
 class RecipeFilter(FilterSet):
