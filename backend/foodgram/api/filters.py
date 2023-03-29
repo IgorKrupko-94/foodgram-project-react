@@ -5,11 +5,16 @@ from django_filters.rest_framework import (
     FilterSet,
     ModelChoiceFilter
 )
+from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipe
 
 
 User = get_user_model()
+
+
+class IngredientSearchFilter(SearchFilter):
+    search_param = 'name'
 
 
 class RecipeFilter(FilterSet):
