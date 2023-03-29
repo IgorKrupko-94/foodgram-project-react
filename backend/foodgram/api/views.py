@@ -11,7 +11,7 @@ from rest_framework.status import (
 )
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
-from .filters import RecipeFilter, IngredientFilter
+from .filters import RecipeFilter
 from .permissions import AuthorOrAdminOrReadOnly, IsAuthenticatedOrAdmin
 from recipes.models import (
     Basket,
