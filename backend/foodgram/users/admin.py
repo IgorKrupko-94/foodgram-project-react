@@ -5,7 +5,7 @@ from .models import Follow, User
 
 
 class UserAdmin(ModelAdmin):
-    list_filter = ('email', 'username')
+    search_fields = ('email', 'username')
 
 
 admin.site.register(User, UserAdmin)
