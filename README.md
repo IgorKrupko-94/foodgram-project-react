@@ -3,7 +3,7 @@
 # FOODGRAM-PROJECT-REACT
 Логин: igor
 Пароль: Wenger15@
-Адрес сервера: foodgram2023.sytes.net
+Адрес сервера: http://foodgram2023.sytes.net
 
 ## О чём проект:
 
