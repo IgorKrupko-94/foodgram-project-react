@@ -1,8 +1,7 @@
 ![example workflow](https://github.com/IgorKrupko-94/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
 # FOODGRAM-PROJECT-REACT
-Логин: igor
-Пароль: Wenger15@
+
 Адрес сервера: http://foodgram2023.sytes.net
 
 ## О чём проект:
